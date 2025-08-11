@@ -110,16 +110,31 @@ Splitting into **Receptionist** and **Data Entry Worker**:
 
 ## 📂 Repository Structure
 ```
-/app
-  agent.py         # Orchestrates Receptionist ↔ Data Entry Worker ↔ Tools
-  tools.py         # Booking API calls (mocked)
-  memory.py        # Short/long-term conversation memory
-  llm.py           # LLM interface via OpenRouter
-  static/          # CSS, JS, images
-  templates/       # HTML chat UI
-.env
-requirements.txt
-README.md
+project-root/
+├── data/
+│   └── long_term_mem...
+├── songbird/
+│   ├── agent/
+│   │   ├── __init__.py
+│   │   ├── agent.py
+│   │   ├── llm.py
+│   │   ├── memory.py
+│   │   └── tools.py
+│   ├── static/
+│   │   ├── images/
+│   │   └── styles.css
+│   └── templates/
+│       ├── chat.html
+│       ├── __init__.py
+│       ├── main.py
+│       └── routes.py
+├── .env
+├── .gitignore
+├── README.md
+├── requirements.txt
+└── run.py
+
+
 ```
 
 
