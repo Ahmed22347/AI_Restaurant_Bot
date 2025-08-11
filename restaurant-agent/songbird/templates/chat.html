@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>TheHungryUnicorn Chat</title>
+  <link rel="stylesheet" href="/static/styles.css" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+</head>
+<body>
+  <!-- Static background board (images never under the chat card) -->
+  <div class="bg-board" aria-hidden="true">
+    <img src="/static/images/food-hero-1.png" alt="" class="bg-img tl" />
+    <img src="/static/images/food-hero-2.png" alt="" class="bg-img tr" />
+    <img src="/static/images/food-hero-3.png" alt="" class="bg-img bl" />
+    <img src="/static/images/food-hero-4.png" alt="" class="bg-img br" />
+    <div class="bg-tint"></div>
+  </div>
+
+  <div class="container">
+    <h1>🍽️ TheHungryUnicorn Assistant</h1>
+
+    <div id="chat-box" class="chat-box" aria-live="polite" aria-label="Chat messages"></div>
+
+    <div class="input-area">
+      <textarea
+        id="user-input"
+        placeholder="Type your message..."
+        autocomplete="off"
+        aria-label="Message input"
+      ></textarea>
+      <button id="send-btn">Send</button>
+    </div>
+  </div>
+
+  <script>
+    let isSending = false;
+
+    async function startChat() {
+      try {
+        const res = await fetch("/start");
+        const data = await res.json();
+        appendMessage("assistant", data.message);
+      } catch (e) {
+        appendMessage("assistant", "Sorry, I couldn't start the chat. Please refresh.");
+      }
+      document.getElementById("user-input").focus();
+    }
+
+    async function sendMessage() {
+      if (isSending) return;
+      const input = document.getElementById("user-input");
+      const message = input.value.trim();
+      if (!message) return;
+
+      appendMessage("user", message);
+      input.value = "";
+      autoResize(input);
+      input.focus();
+
+      isSending = true;
+      setSendingState(true);
+
+      try {
+        const res = await fetch("/chat", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ message })
+        });
+        const data = await res.json();
+        appendMessage("assistant", data.response);
+      } catch (e) {
+        appendMessage("assistant", "Hmm, something went wrong sending your message. Try again?");
+      } finally {
+        isSending = false;
+        setSendingState(false);
+      }
+    }
+
+    function setSendingState(state) {
+      const btn = document.getElementById("send-btn");
+      btn.disabled = state;
+      btn.textContent = state ? "Sending…" : "Send";
+    }
+
+    function appendMessage(role, text) {
+      const box = document.getElementById("chat-box");
+      const msg = document.createElement("div");
+      msg.className = `message ${role}`;
+      msg.innerText = text;
+      box.appendChild(msg);
+      box.scrollTop = box.scrollHeight;
+    }
+
+    function autoResize(textarea) {
+      textarea.style.height = "auto";
+      textarea.style.height = textarea.scrollHeight + "px";
+    }
+
+    // --- Event wiring ---
+    window.onload = startChat;
+
+    document.getElementById("send-btn").addEventListener("click", sendMessage);
+
+    const inputEl = document.getElementById("user-input");
+    inputEl.addEventListener("keydown", (e) => {
+      if (e.key === "Enter" && !e.shiftKey) {
+        e.preventDefault();
+        sendMessage();
+      }
+    });
+    inputEl.addEventListener("input", () => autoResize(inputEl));
+  </script>
+</body>
+</html>
