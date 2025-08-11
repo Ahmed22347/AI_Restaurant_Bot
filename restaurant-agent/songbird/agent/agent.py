@@ -66,6 +66,7 @@ class ConversationalAgent:
 
         try:
             result = tool_func(**args)
+            print(f"result: {result}\n")
             return result
         except ToolError as e:
             print(f"Toolerror:{e}")

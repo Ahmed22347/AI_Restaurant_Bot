@@ -101,6 +101,7 @@ def _normalize_time(time_str: str) -> str:
     else:
         raise ToolError("VisitTime must be in HH:MM or HH:MM:SS format.")
 
+from typing import Optional, Any, Dict
 
 def make_reservation(
     date: str,          # YYYY-MM-DD
@@ -111,7 +112,16 @@ def make_reservation(
     special_requests: Optional[str] = None,
     is_leave_time_confirmed: Optional[bool] = None,
     room_number: Optional[str] = None,
-    customer: Optional[Dict[str, Any]] = None,
+    Customer_Title: Optional[Any] = None,
+    Customer_FirstName: Optional[Any] = None,
+    Customer_Surname: Optional[Any] = None,
+    Customer_Email: Optional[Any] = None,
+    Customer_Mobile: Optional[Any] = None,
+    Customer_Phone: Optional[Any] = None,
+    Customer_MobileCountryCode: Optional[Any] = None,
+    Customer_PhoneCountryCode: Optional[Any] = None,
+    Customer_ReceiveEmailMarketing: Optional[Any] = None,
+    Customer_ReceiveSmsMarketing: Optional[Any] = None,
 ) -> str:
     """Tool: Make a new booking with optional fields included only when provided."""
     if not all([date, time, people]):
@@ -120,11 +130,9 @@ def make_reservation(
     if people <= 0:
         raise ToolError("PartySize must be a positive integer.")
 
-
     _validate_date(date)
     time = _normalize_time(time)
     _validate_time(time)
-
 
     # Required fields
     payload = {
@@ -134,24 +142,37 @@ def make_reservation(
         "ChannelCode": channel_code,
     }
 
-    # Optional simple fields (included only if given)
-    if special_requests:
+    # Optional simple fields
+    if special_requests is not None:
         payload["SpecialRequests"] = special_requests
 
     if is_leave_time_confirmed is not None:
-        payload["IsLeaveTimeConfirmed"] = _bool_to_str(is_leave_time_confirmed)
+        payload["IsLeaveTimeConfirmed"] = is_leave_time_confirmed
 
-    if room_number:
+    if room_number is not None:
         payload["RoomNumber"] = room_number
 
-    # Optional customer fields: flatten as Customer[Key]=value but only if non-empty
-    if customer:
-        for key, value in customer.items():
-            if value is None:
-                continue
-            s = str(value).strip()
-            if s != "":
-                payload[f"Customer[{key}]"] = s
+    # Customer fields — added exactly as provided, no validation/processing
+    if Customer_Title is not None:
+        payload["Customer[Title]"] = Customer_Title
+    if Customer_FirstName is not None:
+        payload["Customer[FirstName]"] = Customer_FirstName
+    if Customer_Surname is not None:
+        payload["Customer[Surname]"] = Customer_Surname
+    if Customer_Email is not None:
+        payload["Customer[Email]"] = Customer_Email
+    if Customer_Mobile is not None:
+        payload["Customer[Mobile]"] = Customer_Mobile
+    if Customer_Phone is not None:
+        payload["Customer[Phone]"] = Customer_Phone
+    if Customer_MobileCountryCode is not None:
+        payload["Customer[MobileCountryCode]"] = Customer_MobileCountryCode
+    if Customer_PhoneCountryCode is not None:
+        payload["Customer[PhoneCountryCode]"] = Customer_PhoneCountryCode
+    if Customer_ReceiveEmailMarketing is not None:
+        payload["Customer[ReceiveEmailMarketing]"] = Customer_ReceiveEmailMarketing
+    if Customer_ReceiveSmsMarketing is not None:
+        payload["Customer[ReceiveSmsMarketing]"] = Customer_ReceiveSmsMarketing
 
     response = call_api("BookingWithStripeToken", payload)
 
@@ -160,7 +181,6 @@ def make_reservation(
         return f"Reservation confirmed! Your reference is {booking_ref}."
     else:
         raise ToolError("Failed to book reservation.")
-    
 
 def check_reservation(booking_reference: str) -> str:
     """Tool: Check details of an existing reservation."""

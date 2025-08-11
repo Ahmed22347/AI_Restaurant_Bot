@@ -38,14 +38,14 @@ DEFAULT_MODEL = os.getenv(
     "OPENROUTER_MODEL",
     # Default to Gemini 2.5 Flash Lite; override via env OPENROUTER_MODEL if desired.
     #"google/gemini-2.5-flash-lite-preview"
-    "google/gemini-2.5-flash-lite"
+    #"google/gemini-2.5-flash-lite"
     #"mistralai/devstral-small"
     #"google/gemma-3n-e2b-it:free"
     #"deepseek/deepseek-r1-0528-qwen3-8b",
     #"qwen/qwen3-4b:free"
     #"openai/gpt-4.1-nano"
     #"openai/gpt-4.1-mini"
-    #"google/gemini-2.5-flash"
+    "google/gemini-2.5-flash"
     #"google/gemini-2.0-flash-001"
 )
 NOT_GEMINI_MODEL = False
@@ -349,6 +349,7 @@ class GeminiLLM:
         try:
             data = json.loads(text)
             if isinstance(data, dict) and "tool_call" in data and isinstance(data["tool_call"], dict):
+                print("worked1")
                 return data["tool_call"]
         except Exception:
             pass
@@ -359,6 +360,7 @@ class GeminiLLM:
             try:
                 data = json.loads(text[lb:rb+1])
                 if isinstance(data, dict) and "tool_call" in data and isinstance(data["tool_call"], dict):
+                    print("worked2")
                     return data["tool_call"]
             except Exception:
                 pass
